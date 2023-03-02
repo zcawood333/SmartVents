@@ -1,6 +1,6 @@
 import socket
 
-MULTICAST_IP = "224.3.29.71" # Must be in multicast range 224.0.0.0-239.255.255.255
+MULTICAST_IP = "224.1.1.1" # Must be in multicast range 224.0.0.0-239.255.255.255
 PORT = 12345 # Pick a value above standard port # range
 
 def subscribe_to_multicast():

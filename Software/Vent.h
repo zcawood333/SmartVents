@@ -13,6 +13,7 @@ private:
 public:
 	Vent(uint64_t id, uint64_t zone);
 	Vent(uint64_t id);
+	~Vent();
 	uint64_t getId();
 	void setZone(uint64_t zone);
 	uint64_t getZone();
@@ -20,6 +21,7 @@ public:
 	float getLouverPos();
 	Run getCurrentRun();
 	std::vector<Run> getPastRuns();
+	void startRun(float target, RunTimestamp data); // Creates a new run
 	void updateCurrentRun(RunTimestamp data); // Adds a new timestamp to the current run
 	void saveCurrentRun(); // Adds the current run to the pastRuns
 };

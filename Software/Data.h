@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <vector>
 
+#define TIMESTAMP_DELAY 600 // The delay between timestamps measured in seconds (was 300)
+
 typedef struct RunTimestamp {
 	float louver; // Louver position [0-1]
 	float measured; // Measured temperature in C

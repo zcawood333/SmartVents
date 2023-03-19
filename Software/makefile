@@ -2,7 +2,7 @@ OBJS = main.o Vent.o
 CC = g++
 INCLUDES = Vent.h Data.h
 LIBS = Data.h
-CFLAGS = -Wall -g
+CFLAGS = -ggdb -Wall
 EXECUTABLE = main
 COMMANDLINE =
 

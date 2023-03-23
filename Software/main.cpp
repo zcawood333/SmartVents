@@ -12,10 +12,11 @@ float estimateTemp(Vent &vent) {
     float avgBubbleMass = 1.5; //kg, very rough esimtate
     float M = avgBubbleMass / avgRoomMass;
     //float s = 1.005; //kJ/kg K specific heat of air
+    float adjust = (last.measured - current.measured)/40;
 
     //float heatToRoom = avgBubbleMass * s * (last.measured - current.measured); //calc heat transfered from the bubble to the room
     //float roomDT = heatToRoom / (avgRoomMass * s); //calculate the delta T of the room based on heat transfered to it
-    float roomDT = M * (last.measured - current.measured);
+    float roomDT = M * (last.measured - current.measured) - adjust;
     std::cout << "Estimated dT: " << roomDT << "\n";
     return current.estimated + roomDT;
 }
@@ -23,9 +24,9 @@ float estimateTemp(Vent &vent) {
 int main(int argc, char* argv[]) {
 
     Vent vent(0);
-    RunTimestamp baseline = {1, 22.3, 22.3};
+    RunTimestamp baseline = {1, 22.22, 22.22};
     vent.startRun(23.89, baseline);
-    float maxVentTemp = 33.3;
+    float maxVentTemp = 31.3;
     float estimate = vent.getCurrentRun().timestamps[0].estimated;
     uint32_t time = 0;
 
@@ -36,7 +37,7 @@ int main(int argc, char* argv[]) {
         time += TIMESTAMP_DELAY;
 
         //Simulate the cooling period (10min for now)
-        RunTimestamp startTimestamp = {1, 26.7, estimate};
+        RunTimestamp startTimestamp = {1, 26.5, estimate};
         vent.updateCurrentRun(startTimestamp);
         time += TIMESTAMP_DELAY;
 

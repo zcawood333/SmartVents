@@ -1,13 +1,15 @@
 import socket
 
-MULTICAST_IP = "224.1.1.1" # Must be in multicast range 224.0.0.0-239.255.255.255
+MULTICAST_IP = "239.255.255.249" # Must be in multicast range 224.0.0.0-239.255.255.255
 PORT = 12345 # Pick a value above standard port # range
 
 def subscribe_to_multicast():
     """Subscribes to the multicast address."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_aton(MULTICAST_IP) + socket.inet_aton('0.0.0.0'))
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_aton(MULTICAST_IP) + socket.inet_aton(socket.gethostbyname(socket.gethostname())))
         sock.bind(('', PORT))
+
+        print(f'Subscribed to multicast: {MULTICAST_IP}, {PORT}')
 
         while True:
             data, address = sock.recvfrom(1024)
@@ -16,8 +18,10 @@ def subscribe_to_multicast():
 def send_to_multicast(data: bytes):
     """Sends the given data to the multicast address."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 64)
         sock.sendto(data, (MULTICAST_IP, PORT))
+    
+    print(f'Sending message {str(data)}')
 
 if __name__ == '__main__':
     # Test Script
@@ -30,7 +34,10 @@ if __name__ == '__main__':
 
     # Send some data to the multicast address in another thread
     data = b"Hello, world!"
-    for _ in range(10):
+    for _ in range(5):
         time.sleep(0.5)
         send_thread = threading.Thread(target=send_to_multicast, args=(data,))
         send_thread.start()
+
+# some WAP allow certain multicast addressed messages to go through and not others; also depends on the device sending the messages
+# changed from 224.1.1.1 because it is reserved for network administration functions

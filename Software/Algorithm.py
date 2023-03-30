@@ -1,5 +1,11 @@
-from typing import List
+from Data import Timestamp
+from Data import Run
+from Data import Vent
+#does this work?
 
+
+
+# ALL OLD CODE... TO BE CHANGED ~ TRASLSATED BY CHATGPT
 # Defines data structures used for the temperature algorithm ~ currently subject to change
 
 TIMESTAMP_DELAY = 600  # The delay between timestamps measured in seconds (was 300)

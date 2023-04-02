@@ -29,9 +29,9 @@ def subscribe_to_multicast(callback_function: Callable[[int,float,bool],None]):
 
         while True:
             data, address = sock.recvfrom(1024)
-            # "!" is network formatting (big-endian), B is unsigned char (uint8), Q is unsigned long long (uint64), f is float (4 bytes), ? is bool (uint8)
+            # "<" is little-endian formatting, B is unsigned char (uint8), Q is unsigned long long (uint64), f is float (4 bytes), ? is bool (uint8)
             try:
-                (header, vent_uuid, temperature, motion) = struct.unpack("!BQf?", data) 
+                (header, vent_uuid, temperature, motion) = struct.unpack("<BQf?", data) 
                 if header == 0:
                     callback_function(vent_uuid, temperature, motion)
             except:
@@ -45,7 +45,7 @@ def send_louver_position(vent_uuid: int, louver_position: float):
         louver_position (float): new louver position for the vent where 0 < louver_position < 1
     """
     header = int(1) # header is always 1 for messages from the hub to the vents
-    byte_message = struct.pack("!BQf", header, vent_uuid, louver_position)
+    byte_message = struct.pack("<BQf", header, vent_uuid, louver_position)
     # print(f'Sending message: {str(byte_message)}')
     _send_to_multicast(byte_message)
 
@@ -58,7 +58,7 @@ def _send_vent_data(vent_uuid: int, temperature: float, motion: bool):
         temperature (float): measured temperature
         motion (bool): whether or not motion was detected
     """
-    byte_message = struct.pack("!BQf?", 0, vent_uuid, temperature, motion)
+    byte_message = struct.pack("<BQf?", 0, vent_uuid, temperature, motion)
     # print(f'Sending message: {str(byte_message)}')
     _send_to_multicast(byte_message)
 

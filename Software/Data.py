@@ -34,9 +34,17 @@ class Vent:
         newRun = Run(target)
         self.runs.insert(0, newRun)
 
-    def update(self): # see ventupt function from meeting notes
-        stuff = None
-        #get new lovver pos
-        #record as new timestamp 
-        #send the data to the vent
-        #profit???
+    def update(self, measured: float): # Runs an update upon being woken up by the vent ~ Do we do this is driver code or in class functions?
+        # Run some function to get a new louver position
+        newPos = 1
+
+        # Record a new timestamp
+        if(len(self.runs) > 0):
+            #newTimestamp = Timestamp(newPos, measured, motion~where do do we get this from)
+            #self.runs[0].createTimestamp(newTimestamp)
+            print("Create new ts\n")
+        else:
+            print("Error, vent %d has not had it's target temperature set yet.\n", self.id)
+
+        # Send the data to the vent
+        #send(newPos)???

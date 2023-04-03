@@ -16,22 +16,31 @@ def function():
 
 
 # Main driver code
+testing = True
 
 # Init vent(s)
-vent1 = Vent(0)
-vent1.setTarget(75.2)
-testing = True
+vents = [Vent(0), Vent(1), Vent(2)]
+for vent in vents:
+    vent.setTarget(75.2)
 
 # Control loop
 while(True):
-    # wait for comm data?
+    # Wait for messages
+    #while(nomessage):
 
-    # read the message
+    # Read the message
+    measured = 000
+    motion = False
+    vid = 0
 
-    # do stuff
+    # Select the proper vent and update
+    if vid <= len(vents) - 1:
+        newPos = vents[vid].update(measured)
+    else:
+        print("Error. Message could not be paired with a vent.")
 
-    # profit
-    print(vent1.runs[0].target)
+    # Send a message back to the vent with the new louver postion
+    #send(newPos)
 
     # so we don't loop forever...
     if(testing):

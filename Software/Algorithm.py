@@ -5,7 +5,7 @@ from Data import Vent
 # also import ccmmunciation stuff
 
 # Function for autocorrel.
-def funcion1():
+def function1():
     one = 1
     return one
 
@@ -14,36 +14,42 @@ def function():
     two = 2
     return two
 
-
 # Main driver code
-testing = True
+def main():
+    from time import time
 
-# Init vent(s)
-vents = [Vent(0), Vent(1), Vent(2)]
-for vent in vents:
-    vent.setTarget(75.2)
+    testing = True
+    testingTime = 30 # seconds
 
-# Control loop
-while(True):
-    # Wait for messages
-    #while(nomessage):
+    # Init vent(s)
+    vents = [Vent(0), Vent(1), Vent(2)]
+    targetTemps = [73, 74, 75]
+    for vent, target in zip(vents, targetTemps):
+        vent.setTarget(target)
 
-    # Read the message
-    measured = 000
-    motion = False
-    vid = 0
+    # Control loop
+    startTime = time()
+    while(True):
+        # Wait for messages
+        #while(nomessage):
 
-    # Select the proper vent and update
-    if vid <= len(vents) - 1:
-        newPos = vents[vid].update(measured)
-    else:
-        print("Error. Message could not be paired with a vent.")
+        # Read the message
+        measured = 000
+        motion = False
+        vid = 0
 
-    # Send a message back to the vent with the new louver postion
-    #send(newPos)
+        # Select the proper vent and update
+        if vid <= len(vents) - 1:
+            newPos = vents[vid].update(measured)
+        else:
+            print("Error. Message could not be paired with a vent.")
 
-    # so we don't loop forever...
-    if(testing):
-        break
+        # Send a message back to the vent with the new louver postion
+        #send(newPos)
 
+        # so we don't loop forever...
+        if(testing and time() - startTime > testingTime):
+            break
 
+if __name__ == "__main__":
+    main()

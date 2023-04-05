@@ -30,24 +30,33 @@ class Vent:
     def __init__(self, id: int):
         self.id = id
         self.runs = list()
-        self.heatCoeff = list()
+        self.userTarget = 72 # Target temperature (F) when the vent is "enabled" due to motion
+        self.heatingCoeff = [1] # Represents sigma in tp'=sigma*p*c
+        self.heatConstant = 1 # Represents c in tp'=sigma*p*c
+        self.bucket = 0
+        self.bucketMax = 4
+        self.enabled = True
 
     # Vent 
     def setTarget(self, target): # Sets the target temperature of the vent. Also starts a new run (make sure to handle closing the old run...)
+        self.userTarget = target
         newRun = Run(target)
         self.runs.insert(0, newRun)
 
     def update(self, measured: float, motion: bool): # Runs an update upon being woken up by the vent ~ Do we do this is driver code or in class functions?
-
         # Check if the vent should become idle
-        if(self.__updateIdleTimer(motion)):
-            self.setTarget(self.idleTarget)
+        previouslyEnabled = self.enabled
+        self.__updateIdleTimer(motion)
+        if previouslyEnabled and not self.enabled:
+            self.__setIdle()
+        elif not previouslyEnabled and self.enabled:
+            self.__resume()
 
         # Get the new louver postion based on the measured temperature
         newPos = self.__getNewPos(measured)
 
         # Record a new timestamp
-        if(len(self.runs) > 0):
+        if len(self.runs) > 0:
             newTimestamp = Timestamp(newPos, measured, motion)
             self.runs[0].createTimestamp(newTimestamp)
         else:
@@ -58,10 +67,25 @@ class Vent:
 
     # Internal vent behavior functions
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
-        pos = self.target - measured * self.heatCoeff[0] # PLACEHOLDER
+        target = self.userTarget if self.enabled else self.idleTarget
+        pos = (target - measured) / (self.heatConstant * self.heatingCoeff[0])
+        pos = max(0, min(1, pos))
         return pos
 
-    def __updateIdleTimer(self, motion: bool): # Returns True if the vent should become idle based on motion data, False otherwise
-        # use some algo i.e. leaky bucket
-        idleFlag = False
-        return idleFlag
+    def __updateIdleTimer(self, motion: bool):
+        if motion:
+            self.bucket = min(self.bucketMax, self.bucket + 1)
+        else:
+            self.bucket = max(0, self.bucket - 2)
+        if self.bucket == 0:
+            self.enabled = False
+        else:
+            self.enabled = True
+
+    def __setIdle(self):
+        newRun = Run(self.idleTarget)
+        self.runs.insert(0, newRun)
+
+    def __resume(self):
+        newRun = Run(self.userTarget)
+        self.runs.insert(0, newRun)

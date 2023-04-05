@@ -1,8 +1,4 @@
-from Data import Timestamp
-from Data import Run
-from Data import Vent
-#does this work?
-# also import ccmmunciation stuff
+from Data import Timestamp, Run, Vent
 
 # Function for autocorrel.
 def function1():
@@ -17,6 +13,8 @@ def function():
 # Main driver code
 def main():
     from time import time
+    from threading import Thread
+    from Communication import send_louver_position,subscribe_to_multicast
 
     testing = True
     testingTime = 30 # seconds
@@ -27,29 +25,23 @@ def main():
     for vent, target in zip(vents, targetTemps):
         vent.setTarget(target)
 
-    # Control loop
     startTime = time()
-    while(True):
-        # Wait for messages
-        #while(nomessage):
-
-        # Read the message
-        measured = 000
-        motion = False
-        vid = 0
-
-        # Select the proper vent and update
-        if vid <= len(vents) - 1:
-            newPos = vents[vid].update(measured)
+    def updateVent(ventUUID: int, temperature: float, motion: bool):
+        for vent in vents:
+            if testing and time() - startTime > testingTime:
+                quit()
+            if vent.id == ventUUID:
+                newLouverPosition = vent.update(temperature, motion)
+                send_louver_position(ventUUID, newLouverPosition)
+                break
         else:
             print("Error. Message could not be paired with a vent.")
 
-        # Send a message back to the vent with the new louver postion
-        #send(newPos)
+    controlThread = Thread(target=subscribe_to_multicast, args=(updateVent,))
+    # userAlertsThread = Thread(target=, args=())
 
-        # so we don't loop forever...
-        if(testing and time() - startTime > testingTime):
-            break
+    controlThread.start()
+    # userAlertsThread.start()
 
 if __name__ == "__main__":
     main()

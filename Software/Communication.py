@@ -32,10 +32,11 @@ def subscribe_to_multicast(callback_function: Callable[[int,float,bool],None]):
             # "<" is little-endian formatting, B is unsigned char (uint8), Q is unsigned long long (uint64), f is float (4 bytes), ? is bool (uint8)
             try:
                 (header, vent_uuid, temperature, motion) = struct.unpack("<BQf?", data) 
-                if header == 0:
-                    callback_function(vent_uuid, temperature, motion)
-            except:
-                pass
+            except struct.error as e:
+                # print(e)
+                header = -1
+            if header == 0:
+                callback_function(vent_uuid, temperature, motion)
 
 def send_louver_position(vent_uuid: int, louver_position: float):
     """Send the new louver position to a vent

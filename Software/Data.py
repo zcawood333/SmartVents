@@ -1,4 +1,5 @@
 # Defines data structs/classes needed for hub
+import numpy as np
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):
@@ -62,6 +63,9 @@ class Vent:
         else:
             print("Error, vent %d has not had it's target temperature set yet.\n", self.id)
 
+        if len(self.runs[0].timestamps) >= 10 and self.runs[0].timestamps[-1].temperature > self.runs[0].timestamps[0].temperature:
+            self.__recalibrate()
+
         # Return the new louver position after creating the new timestamp
         return newPos
 
@@ -89,3 +93,26 @@ class Vent:
     def __resume(self):
         newRun = Run(self.userTarget)
         self.runs.insert(0, newRun)
+
+    def __recalibrate(self):
+        self.__setHeatConstant()
+        self.__setHeatCoeff()
+
+    def __setHeatConstant(self):
+        for run in self.runs:
+            for timestamp0, timestamp1 in zip(run.timestamps,run.timestamps[1:]):
+                deltaT = timestamp1.temperature - timestamp0.temperature
+                if deltaT > 0 and timestamp0.louverPos > 0:
+                    self.heatConstant = deltaT / timestamp0.louverPos
+                    return
+
+    def __setHeatCoeff(self):
+        deltaTCurve = list()
+        louverPosCurve = list()
+        for timestamp0, timestamp1 in zip(self.runs[0].timestamps, self.runs[0].timestamps[1:]):
+            deltaT = timestamp1.temperature - timestamp0.temperature
+            deltaTCurve.append(deltaT)
+            louverPosCurve.append(timestamp0.louverPos)
+        deltaTCurve = np.matrix(deltaTCurve).T
+        louverPosCurve = np.matrix(louverPosCurve).T
+        self.heatingCoeff = np.linalg.inv(louverPosCurve.T * louverPosCurve) * louverPosCurve.T * (deltaTCurve/self.heatConstant)

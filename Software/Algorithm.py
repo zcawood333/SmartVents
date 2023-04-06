@@ -17,22 +17,24 @@ def main():
     from Communication import send_louver_position,subscribe_to_multicast
 
     testing = True
-    testingTime = 30 # seconds
+    testingTime = 600 # seconds
 
     # Init vent(s)
-    vents = [Vent(0), Vent(1), Vent(2)]
-    targetTemps = [73, 74, 75]
+    vents = [Vent(33), Vent(1), Vent(2)]
+    targetTemps = [70, 74, 75]
     for vent, target in zip(vents, targetTemps):
         vent.setTarget(target)
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
+        print(f"Message received: {ventUUID = }, {temperature = }, {motion = }")
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
                 newLouverPosition = vent.update(temperature, motion)
-                send_louver_position(ventUUID, newLouverPosition)
+                print("New louver position: ", newLouverPosition*120)
+                send_louver_position(ventUUID, newLouverPosition*120)
                 break
         else:
             print("Error. Message could not be paired with a vent.")

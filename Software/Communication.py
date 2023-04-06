@@ -3,7 +3,7 @@ import struct
 from typing import Callable
 
 MULTICAST_IP = "239.255.255.249" # Must be in multicast range 224.0.0.0-239.255.255.255
-PORT = 12345 # Pick a value above standard port # range
+PORT = 5005 # Pick a value above standard port # range
 
 def _send_to_multicast(data: bytes):
     """Sends the given data to the multicast address

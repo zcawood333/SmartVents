@@ -1,5 +1,6 @@
 # Defines data structs/classes needed for hub
 import numpy as np
+from DataCollection import writeData
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):
@@ -74,6 +75,9 @@ class Vent:
 
         if len(self.runs[0].timestamps) >= 10 and self.runs[0].timestamps[-1].temperature > self.runs[0].timestamps[0].temperature:
             self.__recalibrate()
+
+        # Write the new timestamp info to the data file
+        writeData(self.id, self.target, measured, newPos, motion)
 
         # Return the new louver position after creating the new timestamp
         return newPos

@@ -26,9 +26,10 @@ class Run:
             return None
         
 class Vent:
-    idleTarget = 64 # Target temperature (F) when the vent is "disabled" due to lack of motion
+    instances = []
 
     def __init__(self, id: int):
+        Vent.instances.append(self)
         self.id = id
         self.runs = list()
         self.userTarget = 72 # Target temperature (F) when the vent is "enabled" due to motion
@@ -37,6 +38,14 @@ class Vent:
         self.bucket = 0
         self.bucketMax = 4
         self.enabled = True
+
+    @property
+    def idleTarget(self):
+        return self.userTarget - 4
+
+    @property
+    def target(self):
+        return self.userTarget if self.enabled else self.idleTarget
 
     # Vent 
     def setTarget(self, target): # Sets the target temperature of the vent. Also starts a new run (make sure to handle closing the old run...)

@@ -29,9 +29,10 @@ class Run:
 class Vent:
     instances = []
 
-    def __init__(self, id: int):
+    def __init__(self, id: int, master: bool = False):
         Vent.instances.append(self)
         self.id = id
+        self.master = master
         self.runs = list()
         self.userTarget = 72 # Target temperature (F) when the vent is "enabled" due to motion
         self.heatingCoeff = [1] # Represents sigma in tp'=sigma*p*c
@@ -85,7 +86,10 @@ class Vent:
     # Internal vent behavior functions
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
         target = self.userTarget if self.enabled else self.idleTarget
-        pos = (target - measured) / (self.heatConstant * self.heatingCoeff[0])
+        deltaT = target - measured
+        if self.master:
+            deltaT /= 2
+        pos = deltaT / (self.heatConstant * self.heatingCoeff[0])
         pos = max(0, min(1, pos))
         return pos
 

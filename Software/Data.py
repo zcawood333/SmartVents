@@ -10,7 +10,7 @@ class Timestamp:
         self.temperature = temperature # Measured temperature when timestamp was created (F)
         self.motion = motion # Motion at the moment of timestamp creation
         current_time = datetime.now()
-        self.current_time_seconds = current_time.timestamp()
+        self.unix_time = current_time.timestamp()
        
        
 

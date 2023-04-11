@@ -16,7 +16,7 @@ class MyClass:
 
                   
          for x in self.timestamps_list:
-             print(x.current_time_seconds,x.louverPos,x.temperature,x.motion)
+             print(x.unix_time,x.louverPos,x.temperature,x.motion)
             
          
 

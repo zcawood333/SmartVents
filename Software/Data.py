@@ -1,6 +1,10 @@
 # Defines data structs/classes needed for hub
 import numpy as np
+<<<<<<< HEAD
 from datetime import datetime
+=======
+from DataCollection import writeData
+>>>>>>> 447c2db5eddbc20f295aa050da41140535bd3325
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):
@@ -31,10 +35,12 @@ class Run:
             return None
         
 class Vent:
-    idleTarget = 64 # Target temperature (F) when the vent is "disabled" due to lack of motion
+    instances = []
 
-    def __init__(self, id: int):
+    def __init__(self, id: int, master: bool = False):
+        Vent.instances.append(self)
         self.id = id
+        self.master = master
         self.runs = list()
         self.userTarget = 72 # Target temperature (F) when the vent is "enabled" due to motion
         self.heatingCoeff = [1] # Represents sigma in tp'=sigma*p*c
@@ -42,6 +48,14 @@ class Vent:
         self.bucket = 0
         self.bucketMax = 4
         self.enabled = True
+
+    @property
+    def idleTarget(self):
+        return self.userTarget - 4
+
+    @property
+    def target(self):
+        return self.userTarget if self.enabled else self.idleTarget
 
     # Vent 
     def setTarget(self, target): # Sets the target temperature of the vent. Also starts a new run (make sure to handle closing the old run...)
@@ -71,13 +85,19 @@ class Vent:
         if len(self.runs[0].timestamps) >= 10 and self.runs[0].timestamps[-1].temperature > self.runs[0].timestamps[0].temperature:
             self.__recalibrate()
 
+        # Write the new timestamp info to the data file
+        writeData(self.id, self.target, measured, newPos, motion)
+
         # Return the new louver position after creating the new timestamp
         return newPos
 
     # Internal vent behavior functions
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
         target = self.userTarget if self.enabled else self.idleTarget
-        pos = (target - measured) / (self.heatConstant * self.heatingCoeff[0])
+        deltaT = target - measured
+        if self.master:
+            deltaT /= 2
+        pos = deltaT / (self.heatConstant * self.heatingCoeff[0])
         pos = max(0, min(1, pos))
         return pos
 

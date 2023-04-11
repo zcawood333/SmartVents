@@ -1,9 +1,5 @@
 from Data import Timestamp, Run, Vent
-
-# Function for autocorrel.
-def function1():
-    one = 1
-    return one
+from DataCollection import initDataCollection
 
 # Function for curve analysis
 def function():
@@ -24,6 +20,8 @@ def main():
     targetTemps = [70, 74, 75]
     for vent, target in zip(vents, targetTemps):
         vent.setTarget(target)
+
+    initDataCollection(vents)
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):

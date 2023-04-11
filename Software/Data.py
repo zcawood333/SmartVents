@@ -1,10 +1,8 @@
 # Defines data structs/classes needed for hub
 import numpy as np
-<<<<<<< HEAD
 from datetime import datetime
-=======
+
 from DataCollection import writeData
->>>>>>> 447c2db5eddbc20f295aa050da41140535bd3325
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):

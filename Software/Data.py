@@ -1,11 +1,16 @@
 # Defines data structs/classes needed for hub
 import numpy as np
+from datetime import datetime
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):
         self.louverPos = louverPos # Louver position measured as a float from 0 - 1. Defines position from the start of this timestanp to end (creation of next timestamp)
         self.temperature = temperature # Measured temperature when timestamp was created (F)
         self.motion = motion # Motion at the moment of timestamp creation
+        current_time = datetime.now()
+        self.current_time_seconds = current_time.timestamp()
+       
+       
 
 class Run:
     def __init__(self, target: float):

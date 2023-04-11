@@ -45,5 +45,8 @@ def main():
     controlThread.start()
     # userAlertsThread.start()
 
+
+
 if __name__ == "__main__":
     main()
+  

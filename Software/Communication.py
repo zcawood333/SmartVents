@@ -101,20 +101,24 @@ if __name__ == '__main__':
     TEST_INCOMING_MESSAGES = True
 
     # Start the TCP server in a thread
-    if TEST_INCOMING_MESSAGES:
-        server_thread = threading.Thread(target=subscribe_to_multicast, args=((_callback_function,)))
-    else:
-        server_thread = threading.Thread(target=_subscribe_to_multicast)
-    server_thread.start()
+    # if TEST_INCOMING_MESSAGES:
+    #     server_thread = threading.Thread(target=subscribe_to_multicast, args=((_callback_function,)))
+    # else:
+    #     server_thread = threading.Thread(target=_subscribe_to_multicast)
+    # server_thread.start()
 
     # Send some data to the multicast address in another thread
-    for _ in range(5):
+    for i in range(50):
         time.sleep(0.5)
         if TEST_INCOMING_MESSAGES:
-            send_thread = threading.Thread(target=_send_vent_data, args=(128,71.3,True))
+            sendThreads = []
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(0,72+i/9,False)))
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(1,70+i/5,False)))
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(2,61+i/3,False)))
         else:
             send_thread = threading.Thread(target=send_louver_position, args=(129,0.66))
-        send_thread.start()
+        for thread in sendThreads:
+            thread.start()
 
 # Notes
 # some WAP allow certain multicast addressed messages to go through and not others; also depends on the device sending the messages

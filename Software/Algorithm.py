@@ -13,11 +13,11 @@ def main():
     from Communication import send_louver_position,subscribe_to_multicast
 
     testing = True
-    testingTime = 600 # seconds
+    testingTime = 6000 # seconds
 
     # Init vent(s)
-    vents = [Vent(33), Vent(1), Vent(2)]
-    targetTemps = [70, 74, 75]
+    vents = [Vent(0), Vent(1), Vent(2)]
+    targetTemps = [78, 80, 75]
     for vent, target in zip(vents, targetTemps):
         vent.setTarget(target)
 
@@ -25,13 +25,13 @@ def main():
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
-        print(f"Message received: {ventUUID = }, {temperature = }, {motion = }")
+        print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
                 newLouverPosition = vent.update(temperature, motion)
-                print("New louver position: ", newLouverPosition*120)
+                print(f'New louver position: {newLouverPosition*120:.2f}')
                 send_louver_position(ventUUID, newLouverPosition*120)
                 break
         else:

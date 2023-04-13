@@ -1,5 +1,5 @@
 from Data import Timestamp, Run, Vent
-from DataCollection import initDataCollection
+from DataCollection import initDataCollection, writeVentParams
 
 # Function for curve analysis
 def function():
@@ -16,12 +16,14 @@ def main():
     testingTime = 6000 # seconds
 
     # Init vent(s)
-    vents = [Vent(0), Vent(1), Vent(2)]
+    vents = [Vent(100), Vent(200), Vent(300)]
     targetTemps = [78, 80, 75]
     for vent, target in zip(vents, targetTemps):
         vent.setTarget(target)
 
     initDataCollection(vents)
+    for vent in vents:
+        writeVentParams(vent.id, vent.master, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
@@ -42,7 +44,6 @@ def main():
 
     controlThread.start()
     # userAlertsThread.start()
-
 
 
 if __name__ == "__main__":

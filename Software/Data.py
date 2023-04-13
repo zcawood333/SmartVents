@@ -2,7 +2,7 @@
 import numpy as np
 from datetime import datetime
 
-from DataCollection import writeData
+from DataCollection import writeData, writeVentParams
 
 class Timestamp:
     def __init__(self, louverPos: float, temperature: float, motion: bool):
@@ -11,8 +11,7 @@ class Timestamp:
         self.motion = motion # Motion at the moment of timestamp creation
         current_time = datetime.now()
         self.unix_time = current_time.timestamp()
-       
-       
+
 
 class Run:
     def __init__(self, target: float):
@@ -32,6 +31,7 @@ class Run:
         else:
             return None
         
+
 class Vent:
     instances = []
 
@@ -146,13 +146,13 @@ class Vent:
             print(f'Error recalibrating vent {self.id}')
         else:
             print(f'Vent {self.id} recalibrated successfully')
-
+            writeVentParams(self.id, self.master, self.heatConstant, self.heatingCoeffs, Vent.instances.index(self))
 
     def __setHeatConstant(self):
         for run in self.runs:
             for timestamp0, timestamp1 in zip(run.timestamps,run.timestamps[1:]):
-                deltaT = timestamp1.temperature - timestamp0.temperature
-                if deltaT > 0 and timestamp0.louverPos > 0:
+                deltaT = timestamp0.temperature - timestamp1.temperature
+                if deltaT > 0 and timestamp0.louverPos > 0.5:
                     self.heatConstant = deltaT / timestamp0.louverPos
                     return
 
@@ -186,20 +186,6 @@ class Vent:
                         previousTimestampTime = timestamp.unix_time
                 if foundTimestamp:
                     break
-                # if time < run.timestamps[-1].unix_time and self.runs.index(run) != 0:
-                #     retimedLouverPosCurve.append(self.runs[self.runs.index(run)-1].timestamps[-1].louverPos)
-                #     break
-                # foundInCurrentRun = False
-                # for timestamp0, timestamp1 in zip(run.timestamps, run.timestamps[1:]):
-                #     if timestamp0.unix_time < time and timestamp1.unix_time >= time:
-                #         retimedLouverPosCurve.append(timestamp0.louverPos)
-                #         foundInCurrentRun = True
-                #         break
-                # if foundInCurrentRun:
-                #     break
-                # elif self.runs.index(run) == len(self.runs)-1:
-                #     retimedLouverPosCurve.append(run.timestamps[-1].louverPos)
-                #     break
         retimedLouverPosCurve = np.matrix(retimedLouverPosCurve).T
         return retimedLouverPosCurve
 

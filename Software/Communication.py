@@ -112,9 +112,9 @@ if __name__ == '__main__':
         time.sleep(0.5)
         if TEST_INCOMING_MESSAGES:
             sendThreads = []
-            sendThreads.append(threading.Thread(target=_send_vent_data, args=(0,72+i/9,False)))
-            sendThreads.append(threading.Thread(target=_send_vent_data, args=(1,70+i/5,False)))
-            sendThreads.append(threading.Thread(target=_send_vent_data, args=(2,61+i/3,False)))
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(100,72+i/9,False)))
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(200,70+i/5,False)))
+            sendThreads.append(threading.Thread(target=_send_vent_data, args=(300,61+i/3,False)))
         else:
             send_thread = threading.Thread(target=send_louver_position, args=(129,0.66))
         for thread in sendThreads:

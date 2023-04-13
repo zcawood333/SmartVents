@@ -195,7 +195,7 @@ class Vent:
         for vent in Vent.instances:
             louverPosCurves = np.concatenate((louverPosCurves, vent.__retimedLouverPosCurve(self.runs[0].timestamps[:-1])), axis=1)
         for timestamp0, timestamp1 in zip(self.runs[0].timestamps, self.runs[0].timestamps[1:]):
-            deltaT = timestamp1.temperature - timestamp0.temperature
+            deltaT = timestamp0.temperature - timestamp1.temperature
             deltaTCurve.append(deltaT)
         deltaTCurve = np.matrix(deltaTCurve).T
         try:

@@ -1,5 +1,5 @@
 from Data import Timestamp, Run, Vent
-from DataCollection import initDataCollection
+from DataCollection import initDataCollection, writeVentParams
 
 # Function for curve analysis
 def function():
@@ -13,25 +13,33 @@ def main():
     from Communication import send_louver_position,subscribe_to_multicast
 
     testing = True
-    testingTime = 600 # seconds
+    testingTime = 6000 # seconds
+
+    LOCAL_CONTROL = False
 
     # Init vent(s)
-    vents = [Vent(33), Vent(1), Vent(2)]
-    targetTemps = [70, 74, 75]
-    for vent, target in zip(vents, targetTemps):
+    vents = []
+    UUIDs = [100, 200, 300]
+    masterVent = [False, False, False]
+    targetTemps = [78, 80, 75]
+    for id, master, target in zip(UUIDs, masterVent, targetTemps):
+        vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)
+        vents.append(vent)
 
     initDataCollection(vents)
+    for vent in vents:
+        writeVentParams(vent.id, vent.master, vent.localControl, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
-        print(f"Message received: {ventUUID = }, {temperature = }, {motion = }")
+        print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
                 newLouverPosition = vent.update(temperature, motion)
-                print("New louver position: ", newLouverPosition*120)
+                print(f'New louver position: {newLouverPosition*120:.2f}')
                 send_louver_position(ventUUID, newLouverPosition*120)
                 break
         else:
@@ -42,7 +50,6 @@ def main():
 
     controlThread.start()
     # userAlertsThread.start()
-
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ def main():
     testing = True
     testingTime = 6000 # seconds
 
-    LOCAL_CONTROL = True
+    LOCAL_CONTROL = False
 
     # Init vent(s)
     vents = []

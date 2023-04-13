@@ -39,8 +39,8 @@ def main():
                 quit()
             if vent.id == ventUUID:
                 newLouverPosition = vent.update(temperature, motion)
-                print(f'New louver position: {newLouverPosition*120:.2f}')
-                send_louver_position(ventUUID, newLouverPosition*120)
+                print(f'New louver position: {newLouverPosition*120 - 120:.2f}')
+                send_louver_position(ventUUID, newLouverPosition*120 - 120)
                 break
         else:
             print("Error. Message could not be paired with a vent.")

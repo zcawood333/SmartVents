@@ -15,15 +15,21 @@ def main():
     testing = True
     testingTime = 6000 # seconds
 
+    LOCAL_CONTROL = True
+
     # Init vent(s)
-    vents = [Vent(100), Vent(200), Vent(300)]
+    vents = []
+    UUIDs = [100, 200, 300]
+    masterVent = [False, False, False]
     targetTemps = [78, 80, 75]
-    for vent, target in zip(vents, targetTemps):
+    for id, master, target in zip(UUIDs, masterVent, targetTemps):
+        vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)
+        vents.append(vent)
 
     initDataCollection(vents)
     for vent in vents:
-        writeVentParams(vent.id, vent.master, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
+        writeVentParams(vent.id, vent.master, vent.localControl, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):

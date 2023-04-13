@@ -35,10 +35,11 @@ class Run:
 class Vent:
     instances = []
 
-    def __init__(self, id: int, master: bool = False):
+    def __init__(self, id: int, master: bool = False, localControl: bool = False):
         Vent.instances.append(self)
         self.id = id
         self.master = master
+        self.localControl = localControl
         self.runs = list()
         self.userTarget = 72 # Target temperature (F) when the vent is "enabled" due to motion
         self.__heatingCoeffs = np.empty((1,0)) # Represents sigma in tp'=sigma*p*c
@@ -115,6 +116,9 @@ class Vent:
             deltaT /= 2
         otherLouverPos = np.matrix([vent.currLouverPosition for vent in Vent.instances if vent != self]).T
         otherHeatingCoeffs = np.matrix([self.heatingCoeffs[Vent.instances.index(vent), 0] for vent in Vent.instances if vent != self]).T
+        if self.localControl:
+            otherLouverPos = np.matrix([0]).T
+            otherHeatingCoeffs = np.matrix([0]).T
         pos =  (deltaT / self.heatConstant - otherLouverPos.T * otherHeatingCoeffs) / self.heatingCoeffs[Vent.instances.index(self), 0]
         pos = pos[0,0]
         pos = max(0, min(1, pos))
@@ -146,7 +150,7 @@ class Vent:
             print(f'Error recalibrating vent {self.id}')
         else:
             print(f'Vent {self.id} recalibrated successfully')
-            writeVentParams(self.id, self.master, self.heatConstant, self.heatingCoeffs, Vent.instances.index(self))
+            writeVentParams(self.id, self.master, self.localControl, self.heatConstant, self.heatingCoeffs, Vent.instances.index(self))
 
     def __setHeatConstant(self):
         for run in self.runs:
@@ -193,7 +197,8 @@ class Vent:
         deltaTCurve = list()
         louverPosCurves = np.empty((len(self.runs[0].timestamps)-1, 0))
         for vent in Vent.instances:
-            louverPosCurves = np.concatenate((louverPosCurves, vent.__retimedLouverPosCurve(self.runs[0].timestamps[:-1])), axis=1)
+            if not self.localControl or vent == self:
+                louverPosCurves = np.concatenate((louverPosCurves, vent.__retimedLouverPosCurve(self.runs[0].timestamps[:-1])), axis=1)
         for timestamp0, timestamp1 in zip(self.runs[0].timestamps, self.runs[0].timestamps[1:]):
             deltaT = timestamp0.temperature - timestamp1.temperature
             deltaTCurve.append(deltaT)

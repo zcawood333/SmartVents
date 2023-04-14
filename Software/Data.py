@@ -34,6 +34,7 @@ class Run:
 
 class Vent:
     instances = []
+    minTemperature = 60 # Minimum temperature we will allow
 
     def __init__(self, id: int, master: bool = False, localControl: bool = False):
         Vent.instances.append(self)
@@ -61,7 +62,7 @@ class Vent:
 
     @property
     def idleTarget(self):
-        return self.userTarget - 4
+        return min(self.userTarget - 8, self.minTemperature)
 
     @property
     def target(self):
@@ -76,7 +77,11 @@ class Vent:
 
     # Vent 
     def setTarget(self, target): # Sets the target temperature of the vent. Also starts a new run (make sure to handle closing the old run...)
-        self.userTarget = target
+        if(target >= self.minTemperature):
+            self.userTarget = target
+        else:
+            print("Error vent minimum temperature is", self.minTemperature, "F. Setting target to minimum...")
+            self.userTarget = self.minTemperature
         newRun = Run(target)
         self.runs.insert(0, newRun)
 
@@ -97,7 +102,7 @@ class Vent:
             newTimestamp = Timestamp(newPos, measured, motion)
             self.runs[0].createTimestamp(newTimestamp)
         else:
-            print("Error, vent %d has not had it's target temperature set yet.\n", self.id)
+            print("Error, vent", self.id, "has not had it's target temperature set yet.")
 
         if len(self.runs[0].timestamps) >= 10 and self.runs[0].timestamps[-1].temperature < self.runs[0].timestamps[0].temperature:
             self.__recalibrate()
@@ -126,9 +131,9 @@ class Vent:
 
     def __updateIdleTimer(self, motion: bool):
         if motion:
-            self.bucket = min(self.bucketMax, self.bucket + 1)
+            self.bucket = min(self.bucketMax, self.bucket + 2)
         else:
-            self.bucket = max(0, self.bucket - 2)
+            self.bucket = max(0, self.bucket - 1)
         if self.bucket == 0:
             self.enabled = False
         else:

@@ -2,7 +2,12 @@ from Data import Timestamp, Run, Vent
 from DataCollection import initDataCollection, writeVentParams
 
 # Function for curve analysis
-def function():
+def localCurveCheck():
+
+    # get an aggregated curve that we can compare against
+
+    # what we are intrested in checking is the strady state behavior of the curves
+    #how do we figure out if a curve has reached steady state?
     two = 2
     return two
 
@@ -21,7 +26,7 @@ def main():
     vents = []
     UUIDs = [100, 200, 300]
     masterVent = [False, False, False]
-    targetTemps = [78, 80, 75]
+    targetTemps = [59, 80, 75]
     for id, master, target in zip(UUIDs, masterVent, targetTemps):
         vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)

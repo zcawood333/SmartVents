@@ -1,15 +1,51 @@
 from Data import Timestamp, Run, Vent
 from DataCollection import initDataCollection, writeVentParams
 
-# Function for curve analysis
-def localCurveCheck():
+# Functions for curve analysis
+def getStableTimestamp(run : Run, target): # Returns the index of the first stable timestamp, None if the run isn't stable
 
-    # get an aggregated curve that we can compare against
+    stableRange = 3 # +- range from target to be considered stable
+    minDuration = 3 # Minimum number of timestamps that need to be in the stable range to be considered stable
+    stability = 0 # Counts number of stable timestamps
 
-    # what we are intrested in checking is the strady state behavior of the curves
-    #how do we figure out if a curve has reached steady state?
-    two = 2
-    return two
+    for timestamp in run.timestamps:
+        if target + stableRange >= timestamp.temperature and target - stableRange <= timestamp.temperature:
+            stability += 1
+
+            if stability >= minDuration:
+                return run.timestamps.index(run) - minDuration + 1
+        else:
+            if stability > 0:
+                stability -= 1
+        
+    return None
+
+def localCurveCheck(vent : Vent):
+    # For now we will a assume a curve is in steady state when it first reaches within +-3F of its target & maintains it for at least 3 timestamps
+    # This means that it may be possible to get runs that never reach steady state (if that happens what do we do?)
+
+    minPastRuns = 3 # Minimum number of past runs with the same target temperature needed to run the analysis
+
+    # Get the current target temperature
+    if(len(vent.runs) > 0):
+        currentTarget = vent.runs[0].target
+    else:
+        print("Error. No runs found for the current vent.")
+        return
+
+    # Find all the stable past runs that have the same target temperature as the current run
+    pastRuns = list()
+    for run in vent.runs[1:]:
+        if(run.target == currentTarget and getStableTimestamp(run) != None):
+            pastRuns.append(run)
+
+    #
+    if(len(pastRuns) >= minPastRuns):
+        # now that we potentially have the steady states of the past curves, what do we do?
+        two = 0
+    else:
+        print("Error. Number of matching past runs is insufficient.")
+        return
 
 # Main driver code
 def main():
@@ -26,7 +62,7 @@ def main():
     vents = []
     UUIDs = [100, 200, 300]
     masterVent = [False, False, False]
-    targetTemps = [59, 80, 75]
+    targetTemps = [70, 80, 75]
     for id, master, target in zip(UUIDs, masterVent, targetTemps):
         vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)

@@ -5,8 +5,8 @@ import time
 class MyClass:
     def __init__(self):
         self.timestamps_list = []
-       
-
+        self.alert_list = []
+        
 
 
       
@@ -22,7 +22,19 @@ class MyClass:
          print("Initial value is ", self.initial_value, "and the latest value is ", self.latest_value)
         
          self.target_temp = target_temp
-         print("target temperature is ",self.target_temp)
+         print("Target temperature is ",self.target_temp)
+
+         for obj in self.timestamps_list:
+            temp_range = range(int(self.target_temp - 0.5), int(self.target_temp + 0.6))
+            if obj.temperature in temp_range:
+                self.alert_list.append(obj.unix_time)
+                    
+
+           
+
+             
+
+        
          
 
         

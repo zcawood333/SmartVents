@@ -150,9 +150,6 @@ void setup()
   Serial.println("Woke up");
   my_stepper.setSpeed(7);
   pinMode(motionSensor, INPUT);
-  //pinMode(motion_vcc, OUTPUT);
-
-  
   Serial.println("IP address: " + WiFi.localIP().toString());
 
   WiFi.config(local_IP, gateway, subnet);
@@ -166,13 +163,6 @@ void setup()
 
   udp.beginMulticast(multicast_IP, localPort);    // Start UDP server
   Serial.println("UDP server started");
-  
-
-  //digitalWrite(motion_vcc, HIGH); // Power up the motion sensor VCC
-  //rtc_gpio_hold_dis(GPIO_NUM_12);
-  //rtc_gpio_hold_en(GPIO_NUM_12);
-  //delay(67);
-  //rtc_gpio_set_level(GPIO_NUM_12, HIGH);
 
   startTime = millis();
   delay(3500);
@@ -181,33 +171,6 @@ void setup()
 void loop()
 {
   
-  
-  /*Counter++;
-  //Serial.println(Counter);
-  
-  if (Counter >= 100)
-  {
-   
-    bootCount = HIGH;
-    Serial.print("BootCount is ");
-    Serial.println(bootCount);
-    Counter = 0;
-  }
-  if(digitalRead(motionSensor) == HIGH || x == 1 )
-  {
-    //y = elapsed_time;    
-    Serial.println("Motion Sensor is HIGH");
-    bootCount = LOW;
-    x = 0;
-    //Counter = 0;
-  }*/
- 
-
-
-
-  //read data value of temperature
-  //Serial.print(temp.tempF());
-  //Serial.print("ºF ");
 
   //read motion data
   bool sensorValue = digitalRead(motionSensor);
@@ -220,12 +183,6 @@ void loop()
     Motion_Wakeup = 0;
   }
 
-  /*if(Send_Count == 0 )
-  {
-    
-    sendData(temp.tempF()/2.7044, sensorValue);
-    Send_Count +=1;      
-  }*/
 
    if(Send_Count == 0 )
   {
@@ -242,14 +199,8 @@ void loop()
   
    if (millis() - startTime >= sleepInterval / 1000 )
   {
-    //bootCount  = ! bootCount;
-    //digitalWrite(motion_vcc, HIGH); // Power up motion sensor
-    //rtc_gpio_hold_dis(GPIO_NUM_12);
-    //rtc_gpio_hold_en(GPIO_NUM_12);s
-    //delay(67);
-    //rtc_gpio_set_level(GPIO_NUM_12, HIGH); // Set GPIO 12 to high
+    
     delay(5000);
-    //Serial.println("BootCount is " + String(HIGH));
     Serial.println("sleep for 0.5 minute");
     esp_deep_sleep_start();               // go to sleep 
   }

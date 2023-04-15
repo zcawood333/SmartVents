@@ -62,7 +62,7 @@ class Vent:
 
     @property
     def idleTarget(self):
-        return min(self.userTarget - 8, self.minTemperature)
+        return max(self.userTarget - 8, self.minTemperature)
 
     @property
     def target(self):
@@ -152,9 +152,9 @@ class Vent:
         self.__setHeatConstant()
         if not self.__setHeatCoeff(): # if setting the heat coefficient vector fails
             self.heatConstant = oldHeatConstant
-            print(f'Error recalibrating vent {self.id}')
+            # print(f'Error recalibrating vent {self.id}')
         else:
-            print(f'Vent {self.id} recalibrated successfully')
+            # print(f'Vent {self.id} recalibrated successfully')
             writeVentParams(self.id, self.master, self.localControl, self.heatConstant, self.heatingCoeffs, Vent.instances.index(self))
 
     def __setHeatConstant(self):
@@ -174,20 +174,20 @@ class Vent:
             if len(self.runs) == 0 or (len(self.runs) == 1 and len(self.runs[0].timestamps) == 0): # if no timestamps have been recorded yet there will only be 1 empty run
                 retimedLouverPosCurve.append(0)
                 continue
-            if len(self.runs[-1].timestamps) > 0 and time < self.runs[-1].timestamps[-1].unix_time: # timestamp older than oldest timestamp for this vent
+            if len(self.runs[-1].timestamps) > 0 and time <= self.runs[-1].timestamps[-1].unix_time: # timestamp older than oldest timestamp for this vent
                 retimedLouverPosCurve.append(0)
                 continue
-            elif time < self.runs[-2].timestamps[-1].unix_time: # timestamp older than oldest timestamp for this vent and first run is empty
+            elif len(self.runs) >= 2 and time <= self.runs[-2].timestamps[-1].unix_time: # timestamp older than oldest timestamp for this vent and first run is empty
                 retimedLouverPosCurve.append(0)
                 continue
-            if time > self.runs[0].timestamps[0].unix_time: # timestamp more recent than most recent timestamp for this vent
+            if time >= self.runs[0].timestamps[0].unix_time: # timestamp more recent than most recent timestamp for this vent
                 retimedLouverPosCurve.append(self.runs[0].timestamps[0].louverPos)
                 continue
             previousTimestampTime = self.runs[0].timestamps[0].unix_time
             foundTimestamp = False
             for idx, run in enumerate(self.runs): # runs from most recent run to oldest
                 for timestamp in run.timestamps: # runs from most recent timestamps to oldest
-                    if time < previousTimestampTime and time > timestamp.unix_time:
+                    if time <= previousTimestampTime and time > timestamp.unix_time:
                         retimedLouverPosCurve.append(timestamp.louverPos)
                         foundTimestamp = True
                         break

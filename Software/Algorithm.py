@@ -80,19 +80,20 @@ def main():
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
-                newLouverPosition = vent.update(temperature, motion)
-                print(f'New louver position: {newLouverPosition*120:.2f}')
-                send_louver_position(ventUUID, newLouverPosition*120)
+                print(f'Current Target Temperature: {vent.target}')
+                newLouverPosition = vent.update(temperature, motion)*120 - 120
+                print(f'New louver position: {newLouverPosition:.2f}')
+                send_louver_position(ventUUID, newLouverPosition)
                 break
         else:
             print("Error. Message could not be paired with a vent.")
 
     controlThread = Thread(target=subscribe_to_multicast, args=(updateVent,))
-    my_class = MyClass()
-    userAlertsThread = Thread(target= my_class.User_Alerts, args=())
+    # my_class = MyClass()
+    # userAlertsThread = Thread(target= my_class.User_Alerts, args=())
 
     controlThread.start()
-    userAlertsThread.start()
+    # userAlertsThread.start()
 
 
 if __name__ == "__main__":

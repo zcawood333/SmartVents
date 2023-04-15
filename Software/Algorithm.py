@@ -1,5 +1,6 @@
 from Data import Timestamp, Run, Vent
 from DataCollection import initDataCollection, writeVentParams
+from UserFeedback import MyClass
 
 # Function for curve analysis
 def function():
@@ -46,10 +47,11 @@ def main():
             print("Error. Message could not be paired with a vent.")
 
     controlThread = Thread(target=subscribe_to_multicast, args=(updateVent,))
-    # userAlertsThread = Thread(target=, args=())
+    my_class = MyClass()
+    userAlertsThread = Thread(target= my_class.User_Alerts, args=())
 
     controlThread.start()
-    # userAlertsThread.start()
+    userAlertsThread.start()
 
 
 if __name__ == "__main__":

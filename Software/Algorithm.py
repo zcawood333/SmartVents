@@ -63,7 +63,7 @@ def main():
     vents = []
     UUIDs = [100, 200, 300]
     masterVent = [False, False, False]
-    targetTemps = [70, 80, 75]
+    targetTemps = [90, 80, 75]
     for id, master, target in zip(UUIDs, masterVent, targetTemps):
         vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)
@@ -80,8 +80,8 @@ def main():
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
-                print(f'Current Target Temperature: {vent.target}')
                 newLouverPosition = vent.update(temperature, motion)*120 - 120
+                print(f'New Target Temperature: {vent.target}')
                 print(f'New louver position: {newLouverPosition:.2f}')
                 send_louver_position(ventUUID, newLouverPosition)
                 break

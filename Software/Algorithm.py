@@ -50,6 +50,7 @@ def localCurveCheck(vent : Vent):
 
 # Main driver code
 def main():
+    import winsound as ws
     from time import time
     from threading import Thread
     from Communication import send_louver_position,subscribe_to_multicast
@@ -74,12 +75,23 @@ def main():
         writeVentParams(vent.id, vent.master, vent.localControl, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
 
     startTime = time()
+    masterTempAboveTarget = False
     def updateVent(ventUUID: int, temperature: float, motion: bool):
         print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
+                if vent.master:
+                    if not masterTempAboveTarget and temperature > vent.target:
+                            masterTempAboveTarget = True
+                            ws.Beep(261, 250)
+                            ws.Beep(523, 250)
+                    elif masterTempAboveTarget and temperature < vent.target:
+                            masterTempAboveTarget = False
+                            ws.Beep(523, 250)
+                            ws.Beep(261, 250)
+                    
                 newLouverPosition = vent.update(temperature, motion)*120 - 120
                 print(f'New Target Temperature: {vent.target}')
                 print(f'New louver position: {newLouverPosition:.2f}')

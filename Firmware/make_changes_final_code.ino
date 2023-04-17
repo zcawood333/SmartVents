@@ -13,11 +13,11 @@ ESP_LM35 temp(36);
 #define ONE_WIRE_BUS 26
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-const uint64_t MY_UUID = 300;
+const uint64_t MY_UUID = 200;
 const uint8_t VENT_TO_HUB_HEADER = 0;
 const uint8_t HUB_TO_VENT_HEADER = 1;
 const int stepsPerRevolution = 2048;    // total number of steps in a full revolution
-Stepper my_stepper(stepsPerRevolution, 15, 0, 2, 4);
+Stepper my_stepper(stepsPerRevolution, 16, 13, 17, 15);
 const int motionSensor = 12;
 //const int motion_vcc = 12;
 RTC_DATA_ATTR bool bootCount = LOW;
@@ -121,22 +121,7 @@ void printPacket(inPacket packet) {
   Serial.println(packet.louver_position);
 }
 
-void print_wakeup_reason(){
-  esp_sleep_wakeup_cause_t wakeup_reason;
 
-  wakeup_reason = esp_sleep_get_wakeup_cause();
-
-  switch(wakeup_reason)
-  {
-    case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); x = 1;Motion_Wakeup = 1; break;
-    case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
-    case ESP_SLEEP_WAKEUP_TIMER : Serial.println("Wakeup caused by timer"); break;
-    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
-    case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
-    default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason); break;
-  }
-  
-}
 
 
 
@@ -150,6 +135,7 @@ void setup()
   Serial.println("Woke up");
   my_stepper.setSpeed(7);
   pinMode(motionSensor, INPUT);
+
   Serial.println("IP address: " + WiFi.localIP().toString());
 
   WiFi.config(local_IP, gateway, subnet);
@@ -163,17 +149,34 @@ void setup()
 
   udp.beginMulticast(multicast_IP, localPort);    // Start UDP server
   Serial.println("UDP server started");
-
+  
   startTime = millis();
   delay(3500);
+}
+
+void print_wakeup_reason(){
+  esp_sleep_wakeup_cause_t wakeup_reason;
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  switch(wakeup_reason)
+  {
+    case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); x = 1;Motion_Wakeup = 1; break;
+    case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : Serial.println("Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
+    default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason);Serial.println("120 degrees");my_stepper.step(682); break;
+  }
+  
 }
 
 void loop()
 {
   
-
   //read motion data
   bool sensorValue = digitalRead(motionSensor);
+  Serial.println(sensorValue);
   
   sensors.requestTemperatures(); 
 
@@ -184,7 +187,7 @@ void loop()
   }
 
 
-   if(Send_Count == 0 )
+   if(Send_Count == 0 || sensorValue == HIGH )
   {
     
     sendData(sensors.getTempFByIndex(0), sensorValue);

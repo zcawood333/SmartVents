@@ -117,7 +117,7 @@ class Vent:
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
         target = self.userTarget if self.enabled else self.idleTarget
         deltaT = target - measured
-        if self.master:
+        if self.master and not all([vent.currLouverPosition <= 0.1 for vent in Vent.instances if not vent.master]):
             deltaT /= 2
         otherLouverPos = np.matrix([vent.currLouverPosition for vent in Vent.instances if vent != self]).T
         otherHeatingCoeffs = np.matrix([self.heatingCoeffs[Vent.instances.index(vent), 0] for vent in Vent.instances if vent != self]).T

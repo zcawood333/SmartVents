@@ -63,8 +63,8 @@ def main():
     # Init vent(s)
     vents = []
     UUIDs = [100, 200, 300]
-    masterVent = [False, False, False]
-    targetTemps = [90, 80, 75]
+    masterVent = [False, True, False]
+    targetTemps = [92, 90, 88]
     for id, master, target in zip(UUIDs, masterVent, targetTemps):
         vent = Vent(id, master, LOCAL_CONTROL)
         vent.setTarget(target)
@@ -75,7 +75,6 @@ def main():
         writeVentParams(vent.id, vent.master, vent.localControl, vent.heatConstant, vent.heatingCoeffs, Vent.instances.index(vent))
 
     startTime = time()
-    masterTempAboveTarget = False
     def updateVent(ventUUID: int, temperature: float, motion: bool):
         print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
         for vent in vents:
@@ -83,12 +82,12 @@ def main():
                 quit()
             if vent.id == ventUUID:
                 if vent.master:
-                    if not masterTempAboveTarget and temperature > vent.target:
-                            masterTempAboveTarget = True
+                    if not updateVent.masterTempAboveTarget and temperature > vent.target:
+                            updateVent.masterTempAboveTarget = True
                             ws.Beep(261, 250)
                             ws.Beep(523, 250)
-                    elif masterTempAboveTarget and temperature < vent.target:
-                            masterTempAboveTarget = False
+                    elif updateVent.masterTempAboveTarget and temperature < vent.target:
+                            updateVent.masterTempAboveTarget = False
                             ws.Beep(523, 250)
                             ws.Beep(261, 250)
                     
@@ -99,6 +98,7 @@ def main():
                 break
         else:
             print("Error. Message could not be paired with a vent.")
+    updateVent.masterTempAboveTarget = False
 
     controlThread = Thread(target=subscribe_to_multicast, args=(updateVent,))
     # my_class = MyClass()

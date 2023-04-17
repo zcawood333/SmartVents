@@ -158,11 +158,13 @@ class Vent:
             writeVentParams(self.id, self.master, self.localControl, self.heatConstant, self.heatingCoeffs, Vent.instances.index(self))
 
     def __setHeatConstant(self):
+        previousHeatConstant = self.heatConstant
         for run in self.runs:
             for timestamp0, timestamp1 in zip(run.timestamps,run.timestamps[1:]):
                 deltaT = timestamp0.temperature - timestamp1.temperature
                 if deltaT > 0 and timestamp0.louverPos > 0.5:
                     self.heatConstant = deltaT / timestamp0.louverPos
+                    self.heatConstant = 0.75*previousHeatConstant + 0.25*self.heatConstant
                     return
 
     def __retimedLouverPosCurve(self, timestamps: list[Timestamp]):
@@ -199,6 +201,7 @@ class Vent:
         return retimedLouverPosCurve
 
     def __setHeatCoeff(self) -> bool:
+        previousHeatCoeffs = self.heatingCoeffs
         deltaTCurve = list()
         louverPosCurves = np.empty((len(self.runs[0].timestamps)-1, 0))
         for vent in Vent.instances:
@@ -210,6 +213,7 @@ class Vent:
         deltaTCurve = np.matrix(deltaTCurve).T
         try:
             self.heatingCoeffs = np.linalg.inv(louverPosCurves.T * louverPosCurves) * louverPosCurves.T * (deltaTCurve/self.heatConstant)
+            self.heatingCoeffs = 0.75*previousHeatCoeffs + 0.25*self.heatingCoeffs
             return True
         except np.linalg.LinAlgError:
             return False

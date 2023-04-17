@@ -27,7 +27,7 @@ def temperatureNoise():
 
 
 def changeRoomActivity(roomActive: bool):
-    chanceRoomBecomesInactive = 1/20
+    chanceRoomBecomesInactive = 1/30
     chanceRoomBecomesActive = 1/30
     if roomActive:
         return r.random() < chanceRoomBecomesInactive
@@ -54,10 +54,10 @@ class Room():
 
 # control flags
 USE_SEED = True
-RAND_SEED = 0
-LOCAL_CONTROL = True
-NUM_VENTS = 10
-NUM_CYCLES_TO_RUN = 1000
+RAND_SEED = 3
+LOCAL_CONTROL = False
+NUM_VENTS = 5
+NUM_CYCLES_TO_RUN = 100
 PERCENT_ROOMS_ACTIVE = 0.2
 
 # random seed
@@ -73,6 +73,8 @@ for vent in true_vents:
     vent.heatingCoeffs = np.matrix([r.random()/10 for i in range(NUM_VENTS)]).T
     vent.heatingCoeffs[vent.id,0] = r.random()/10 + 0.9
     vent.heatConstant = r.random()*2 + 1
+print([vent.heatingCoeffs for vent in true_vents])
+print([vent.heatConstant for vent in true_vents])
 Vent.instances.clear()
 
 # simulation vents/params

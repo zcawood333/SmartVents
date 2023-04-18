@@ -104,7 +104,7 @@ class Vent:
         else:
             print("Error, vent", self.id, "has not had it's target temperature set yet.")
 
-        if len(self.runs[0].timestamps) >= 10 and self.runs[0].timestamps[-1].temperature < self.runs[0].timestamps[0].temperature:
+        if len(self.runs[0].timestamps) >= 3 and self.runs[0].timestamps[-1].temperature < self.runs[0].timestamps[0].temperature:
             self.__recalibrate()
 
         # Write the new timestamp info to the data file
@@ -115,6 +115,8 @@ class Vent:
 
     # Internal vent behavior functions
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
+        if measured > self.target:
+            return 0
         target = self.userTarget if self.enabled else self.idleTarget
         deltaT = target - measured
         if self.master and not all([vent.currLouverPosition <= 0.1 for vent in Vent.instances if not vent.master]):
@@ -149,9 +151,11 @@ class Vent:
 
     def __recalibrate(self):
         oldHeatConstant = self.heatConstant
+        oldHeatCoeffs = self.heatingCoeffs
         self.__setHeatConstant()
-        if not self.__setHeatCoeff(): # if setting the heat coefficient vector fails
+        if self.heatConstant < 0 or not self.__setHeatCoeff(): # if setting the heat coefficient vector fails
             self.heatConstant = oldHeatConstant
+            self.heatingCoeffs = oldHeatCoeffs
             # print(f'Error recalibrating vent {self.id}')
         else:
             # print(f'Vent {self.id} recalibrated successfully')
@@ -211,11 +215,20 @@ class Vent:
             deltaT = timestamp0.temperature - timestamp1.temperature
             deltaTCurve.append(deltaT)
         deltaTCurve = np.matrix(deltaTCurve).T
+        if all([louverPos == 0 for louverPos in self.__retimedLouverPosCurve(self.runs[0].timestamps[:-1])]):
+            return False
+        if not all([deltaT > 0 for deltaT in deltaTCurve]):
+            return False
         try:
             self.heatingCoeffs = np.linalg.inv(louverPosCurves.T * louverPosCurves) * louverPosCurves.T * (deltaTCurve/self.heatConstant)
             self.heatingCoeffs = 0.75*previousHeatCoeffs + 0.25*self.heatingCoeffs
-            if self.heatingCoeffs[Vent.instances.index(self), 0] < 0:
+            if self.heatingCoeffs[Vent.instances.index(self), 0] <= 0:
                 raise Exception('bad recalibration')
+            # for idx, heatCoeff in enumerate(self.heatingCoeffs):
+            #     if idx == Vent.instances.index(self):
+            #         self.heatingCoeffs[idx] = max(0, heatCoeff)
+            # if not all([heatCoeff > 0 for heatCoeff in self.heatingCoeffs]):
+            #     raise Exception('bad recalibration')
             return True
         except Exception:
             return False

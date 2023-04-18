@@ -8,7 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../Software"))
 from Data import Timestamp, Run, Vent
 from DataCollection import initDataCollection, writeData, writeVentParams
 
-
 def enableDisableVent():
     return r.random() < 1/10
 
@@ -43,21 +42,27 @@ class Room():
         self.active = active
         self.localControl = trueVent.localControl
     def update(self):
-        self.currTemperature += self.trueVent.heatConstant * self.trueVent.heatingCoeffs.T * np.matrix([vent.currLouverPosition for vent in Vent.instances]).T
-        self.currTemperature = self.currTemperature[0,0]
+        if mainHeatOn():
+            self.currTemperature += self.trueVent.heatConstant * self.trueVent.heatingCoeffs.T * np.matrix([vent.currLouverPosition for vent in Vent.instances]).T
+            self.currTemperature = self.currTemperature[0,0]
         self.currTemperature -= self.currTemperature/100 + temperatureNoise()
         self.currTemperature += temperatureNoise()
         if changeRoomActivity(self.active):
             self.active = not self.active
         self.simVent.update(self.currTemperature, motionDetected(self.active))
 
+masterRoom = None
+
+def mainHeatOn():
+    return masterRoom.currTemperature < masterRoom.trueVent.target
+
 
 # control flags
 USE_SEED = True
 RAND_SEED = 3
 LOCAL_CONTROL = False
-NUM_VENTS = 5
-NUM_CYCLES_TO_RUN = 100
+NUM_VENTS = 10
+NUM_CYCLES_TO_RUN = 1000
 PERCENT_ROOMS_ACTIVE = 0.2
 
 # random seed
@@ -84,6 +89,7 @@ for vent in simulation_vents:
 
 # rooms
 rooms = [Room(true_vents[i], simulation_vents[i], r.randint(60, 70), r.random() < PERCENT_ROOMS_ACTIVE) for i in range(NUM_VENTS)]
+masterRoom = rooms[0]
 
 # data collection
 initDataCollection(simulation_vents)

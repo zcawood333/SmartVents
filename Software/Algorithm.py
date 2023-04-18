@@ -90,7 +90,10 @@ def main():
                             updateVent.masterTempAboveTarget = False
                             ws.Beep(523, 250)
                             ws.Beep(261, 250)
-                    
+                if len(vent.runs) > 0 and len(vent.runs[0].timestamps) > 2:
+                    currentRunTimestamps = vent.runs[0].timestamps
+                    if currentRunTimestamps[0] > currentRunTimestamps[1] and currentRunTimestamps[1] < currentRunTimestamps[2]:
+                        vent.setTarget(vent.userTarget)
                 newLouverPosition = vent.update(temperature, motion)*120 - 120
                 print(f'New Target Temperature: {vent.target}')
                 print(f'New louver position: {newLouverPosition:.2f}')

@@ -217,5 +217,5 @@ class Vent:
             if self.heatingCoeffs[Vent.instances.index(self), 0] < 0:
                 raise Exception('bad recalibration')
             return True
-        except np.linalg.LinAlgError:
+        except Exception:
             return False

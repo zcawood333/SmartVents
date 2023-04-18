@@ -214,6 +214,8 @@ class Vent:
         try:
             self.heatingCoeffs = np.linalg.inv(louverPosCurves.T * louverPosCurves) * louverPosCurves.T * (deltaTCurve/self.heatConstant)
             self.heatingCoeffs = 0.75*previousHeatCoeffs + 0.25*self.heatingCoeffs
+            if self.heatingCoeffs[Vent.instances.index(self), 0] < 0:
+                raise Exception('bad recalibration')
             return True
         except np.linalg.LinAlgError:
             return False

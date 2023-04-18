@@ -20,7 +20,7 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
         df.plot(title=os.path.basename(filePath).split(".")[0], include_bool=True, subplots=[["Measured Temperature", "Target Temperature"],["Motion", "LouverPosition"]], layout=(2,1), sharex=True, legend=True)
         plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
-        plt.show()
+        # plt.show()
         plt.close()
 
 def plotVentParams(ventParamDirPath: os.PathLike, ventUUIDs: list[int] = None,):
@@ -53,7 +53,7 @@ def plotVentParams(ventParamDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         plt.legend(loc="upper left", bbox_to_anchor=(0,1), fontsize="xx-small")
         plt.xlabel("Time (s)")
         plt.savefig(os.path.join(ventParamDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
-        plt.show()
+        # plt.show()
         plt.close()
 
 

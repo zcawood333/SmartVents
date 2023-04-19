@@ -75,12 +75,13 @@ def main():
 
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
-        print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
-        motion = True
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
             if vent.id == ventUUID:
+                print(f'\x1b[{92+Vent.instances.index(vent)}m', end='')
+                print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
+                motion = True
                 if vent.master:
                     if not updateVent.masterTempAboveTarget and temperature > vent.target:
                             updateVent.masterTempAboveTarget = True
@@ -98,6 +99,7 @@ def main():
                 print(f'New Target Temperature: {vent.target}')
                 print(f'New louver position: {newLouverPosition:.2f}')
                 send_louver_position(ventUUID, newLouverPosition)
+                print('\x1b[0m', end='')
                 break
         else:
             print("Error. Message could not be paired with a vent.")

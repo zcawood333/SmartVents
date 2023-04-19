@@ -88,7 +88,7 @@ def plotMainHeat(dirPath: os.PathLike):
 if __name__ == "__main__":
     dirPath = os.path.join(os.path.dirname(__file__), "../Data")
     dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
-    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
+    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-5])
     plotVentData(dirPath)
     plotVentParams(dirPath)
     plotMainHeat(dirPath)

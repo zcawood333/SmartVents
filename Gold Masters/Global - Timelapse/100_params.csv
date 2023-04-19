@@ -1,0 +1,3 @@
+Timestamp | Master Vent | Local Control | Heat Constant | Heat Coefficients | Self Heat Coefficient Index
+2023-04-19T17:29:44.340215 | False | False | 1 | "[1, 0, 0]" | 0
+2023-04-19T17:36:15.853748 | False | False | 1.1447359967447985 | "[1.5611406064154272, 0.19467384240262947, -0.34277932797393323]" | 0

@@ -34,7 +34,7 @@ class Run:
 
 class Vent:
     BASIC_SYSTEM = False # Forces louvers to be always open
-    DUMB_SMART_SYSTEM = True
+    DUMB_SMART_SYSTEM = True # Emulates smart vents on the market
     instances = []
     minTemperature = 60 # Minimum temperature we will allow
 

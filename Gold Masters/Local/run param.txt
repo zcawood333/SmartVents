@@ -1,0 +1,7 @@
+doors open
+local
+motion always on
+4 restarts
+3 min lockout
+200 master
+temps: 92, 90, 88 (100, 200, 300)

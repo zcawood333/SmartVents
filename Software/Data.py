@@ -33,6 +33,7 @@ class Run:
         
 
 class Vent:
+    BASIC_SYSTEM = False # Forces louvers to be always open
     instances = []
     minTemperature = 60 # Minimum temperature we will allow
 
@@ -115,6 +116,9 @@ class Vent:
 
     # Internal vent behavior functions
     def __getNewPos(self, measured: float): # Calculates a new louver position and returns it
+        if self.BASIC_SYSTEM: # System with no louver control, only thermostat
+            return 1
+        
         if measured > self.target:
             return 0
         target = self.userTarget if self.enabled else self.idleTarget

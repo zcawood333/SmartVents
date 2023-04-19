@@ -1,6 +1,5 @@
 from Data import Timestamp, Run, Vent
 from DataCollection import initDataCollection, writeVentParams
-from UserFeedback import MyClass
 
 # Functions for curve analysis
 def getStableTimestamp(run : Run, target): # Returns the index of the first stable timestamp, None if the run isn't stable
@@ -58,7 +57,7 @@ def main():
     testing = True
     testingTime = 6000 # seconds
 
-    LOCAL_CONTROL = False
+    LOCAL_CONTROL = True
 
     # Init vent(s)
     vents = []
@@ -77,6 +76,7 @@ def main():
     startTime = time()
     def updateVent(ventUUID: int, temperature: float, motion: bool):
         print(f"Message received: {ventUUID = }, {temperature = :.2f}, {motion = }")
+        motion = True
         for vent in vents:
             if testing and time() - startTime > testingTime:
                 quit()
@@ -92,7 +92,7 @@ def main():
                             ws.Beep(261, 250)
                 if len(vent.runs) > 0 and len(vent.runs[0].timestamps) > 2:
                     currentRunTimestamps = vent.runs[0].timestamps
-                    if currentRunTimestamps[0] > currentRunTimestamps[1] and currentRunTimestamps[1] < currentRunTimestamps[2]:
+                    if currentRunTimestamps[0].temperature > currentRunTimestamps[1].temperature and currentRunTimestamps[1].temperature < currentRunTimestamps[2].temperature:
                         vent.setTarget(vent.userTarget)
                 newLouverPosition = vent.update(temperature, motion)*120 - 120
                 print(f'New Target Temperature: {vent.target}')

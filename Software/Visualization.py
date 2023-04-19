@@ -57,9 +57,33 @@ def plotVentParams(ventParamDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         plt.close()
 
 
+def plotMainHeat(dirPath: os.PathLike):
+    parameterFiles = [os.path.join(dirPath, file) for file in os.listdir(dirPath) if file.endswith("params.csv")]
+    for filePath in parameterFiles:
+        ventId = None
+        df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
+        df.columns = df.columns.str.strip()
+        if df["Master Vent"][0].strip() != "True":
+            continue
+        ventId = os.path.basename(filePath).split("_")[0]
+        filePath = os.path.join(dirPath, dataFileName(int(ventId)))
+        df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
+        df.columns = df.columns.str.strip()
+        df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
+        df.set_index("Timestamp", inplace=True)
+        df["Main Heat On"] = df["Measured Temperature"] > df["Target Temperature"]
+        df.plot(title="Main Heat", include_bool=True, y=["Main Heat On"], legend=False)
+        plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
+        plt.show()
+        plt.close()
+        break
+
+
+
 if __name__ == "__main__":
     dirPath = os.path.join(os.path.dirname(__file__), "../Data")
     dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
     dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
     plotVentData(dirPath)
     plotVentParams(dirPath)
+    plotMainHeat(dirPath)

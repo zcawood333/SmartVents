@@ -1,0 +1,5 @@
+parse all past temperature and louver position data for "workable" timestamps with intermediate louver position values (0<pos<1) and only use these points for the recalibration process
+
+use set number (n) "workable" points, as time goes on, the points act as a rolling average
+
+set deltaT in __getNewPos to 2*(target - measured) to keep the heat centered on the target, rather than on the target - 1/2 * coolingAmountWhileHeatIsOff

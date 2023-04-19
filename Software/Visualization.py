@@ -71,7 +71,7 @@ def plotMainHeat(dirPath: os.PathLike):
         df.columns = df.columns.str.strip()
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
         df.set_index("Timestamp", inplace=True)
-        df["Main Heat On"] = df["Measured Temperature"] > df["Target Temperature"]
+        df["Main Heat On"] = df["Measured Temperature"] < df["Target Temperature"]
         df.plot(title="Main Heat", include_bool=True, y=["Main Heat On"], legend=False)
         plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
         plt.show()

@@ -5,11 +5,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from DataCollection import dataFileName, parameterFileName
 
+combinedFigure = plt.figure(0)
+
 def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
     dataFiles = [file for file in os.listdir(ventDataDirPath) if file.endswith("data.csv")]
     filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]
     if ventUUIDs is not None:
         filePaths = [os.path.join(ventDataDirPath, dataFileName(ventUUID)) for ventUUID in ventUUIDs]
+    frames = list()
     for filePath in filePaths:
         df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
         if len(df.index) == 0:
@@ -17,13 +20,37 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         df.columns = df.columns.str.strip()
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
+        ventIdx = os.path.basename(filePath).split('_')[0]
+        df.rename(columns={'Target Temperature':"Target Temperature" + ventIdx}, inplace=True)
         df.set_index("Timestamp", inplace=True)
         df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
-        ventIdx = os.path.basename(filePath).split('_')[0]
-        df.plot(title=f'Vent {ventIdx} Data', include_bool=True, subplots=[["Measured Temperature", "Target Temperature"],["Motion", "LouverPosition"]], layout=(2,1), sharex=True, legend=True, xlabel='Time (s)')
-        plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
+        frames.append(df)
+        #plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
+    fig, ax = plt.subplots(2, 1, sharex=True)
+
+    for idx, frame in enumerate(frames):
+        frame.plot(ax=ax, subplots=[["Measured Temperature", f"Target Temperature{idx}"],["Motion", "LouverPosition"]])
+    plt.show()
+    plt.close()
+    # dataFiles = [file for file in os.listdir(ventDataDirPath) if file.endswith("data.csv")]
+    # filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]
+    # if ventUUIDs is not None:
+    #     filePaths = [os.path.join(ventDataDirPath, dataFileName(ventUUID)) for ventUUID in ventUUIDs]
+    # for filePath in filePaths:
+    #     df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
+    #     if len(df.index) == 0:
+    #         continue
+    #     df.columns = df.columns.str.strip()
+    #     df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
+    #     df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
+    #     df.set_index("Timestamp", inplace=True)
+    #     df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
+    #     ventIdx = os.path.basename(filePath).split('_')[0]
+    #     df.rename(columns={"Measured Temperature": f'Vent {ventIdx} Measured Temperature', "Target Temperature": f'Vent {ventIdx} Target Temperature', "Motion": f'Vent {ventIdx} Motion', "LouverPosition": f'Vent {ventIdx} LouverPosition'}, inplace=True, errors="raise")
+    #     df.plot(ax=combinedFigure, title=f'Vent {ventIdx} Data', include_bool=True, subplots=[[f"Vent {ventIdx} Measured Temperature", f'Vent {ventIdx} Target Temperature'],[f'Vent {ventIdx} Motion', f'Vent {ventIdx} LouverPosition']], layout=(2,1), sharex=True, legend=True, xlabel='Time (s)')
+        # plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
         # plt.show()
-        plt.close()
+        # plt.close()
 
 def plotVentParams(ventParamDirPath: os.PathLike, ventUUIDs: list[int] = None,):
     parameterFiles = [file for file in os.listdir(ventParamDirPath) if file.endswith("params.csv")]
@@ -88,7 +115,8 @@ def plotMainHeat(dirPath: os.PathLike):
 if __name__ == "__main__":
     dirPath = os.path.join(os.path.dirname(__file__), "../Data")
     dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
-    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-5])
+    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
     plotVentData(dirPath)
+    plt.savefig(os.path.join(dirPath, "combinedPlot.png"))
     plotVentParams(dirPath)
     plotMainHeat(dirPath)

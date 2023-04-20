@@ -10,20 +10,38 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
     filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]
     if ventUUIDs is not None:
         filePaths = [os.path.join(ventDataDirPath, dataFileName(ventUUID)) for ventUUID in ventUUIDs]
+
+    frames = list()
     for filePath in filePaths:
         df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
         if len(df.index) == 0:
             continue
         df.columns = df.columns.str.strip()
+        ventIdx = os.path.basename(filePath).split('_')[0]
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
         df.set_index("Timestamp", inplace=True)
         df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
-        ventIdx = os.path.basename(filePath).split('_')[0]
-        df.plot(title=f'Vent {ventIdx} Data', include_bool=True, subplots=[["Measured Temperature", "Target Temperature"],["Motion", "LouverPosition"]], layout=(2,1), sharex=True, legend=True, xlabel='Time (s)')
-        plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
-        # plt.show()
-        plt.close()
+        df.rename(columns={"Target Temperature": "Target Temperature " + str(ventIdx), "Measured Temperature": "Measured Temperature " + str(ventIdx), "Motion" : "Motion", "LouverPosition" : "LouverPosition " + str(ventIdx)}, inplace=True, errors='raise')
+        frames.append(df)
+        #plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
+        
+    fig, ax = plt.subplots(2, 1, sharex=True)
+    blue = '#1f77b4'
+    yellow = '#d4af37'
+    green = '#2ca02c'
+    color_dict = {'Target Temperature 100' : green, 'Target Temperature 200' : yellow, 'Target Temperature 300' : blue,
+                 'Measured Temperature 100' : green, 'Measured Temperature 200' : yellow, 'Measured Temperature 300' : blue,
+                 'LouverPosition 100' : green, 'LouverPosition 200' : yellow, 'LouverPosition 300' : blue}
+    idx = 100
+    for frame in frames:
+        axes = frame.plot(ax=ax, legend=True, xlabel='Time (s)', color=[color_dict.get(col, '#333333') for col in frame.columns], subplots=[["Measured Temperature " + str(idx), "Target Temperature " + str(idx)],["Motion", "LouverPosition " + str(idx)]])  
+        axes[0].set_ylabel('Temperature (F)')
+        axes[1].set_ylabel('Louver Position (0.0-1.0)')
+        idx += 100
+
+    plt.show()
+    plt.close()
 
 def plotVentParams(ventParamDirPath: os.PathLike, ventUUIDs: list[int] = None,):
     parameterFiles = [file for file in os.listdir(ventParamDirPath) if file.endswith("params.csv")]
@@ -78,7 +96,7 @@ def plotMainHeat(dirPath: os.PathLike):
         df.set_index("Timestamp", inplace=True)
         df["Main Heat On"] = df["Measured Temperature"] < df["Target Temperature"]
         df.plot(title="Main Heat On/Off", include_bool=True, y=["Main Heat On"], legend=False, ylim=(0,1.1), xlabel='Time (s)')
-        plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
+        #plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
         # plt.show()
         plt.close()
         break
@@ -88,7 +106,7 @@ def plotMainHeat(dirPath: os.PathLike):
 if __name__ == "__main__":
     dirPath = os.path.join(os.path.dirname(__file__), "../Data")
     dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
-    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-5])
+    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
     plotVentData(dirPath)
     plotVentParams(dirPath)
     plotMainHeat(dirPath)

@@ -151,8 +151,10 @@ if __name__ == "__main__":
     # dirPath = os.path.join(os.path.dirname(__file__), "../Data")
     # dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
     # dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
-    dirPath = r'C:\Users\zcawo\Documents\School\Grad\firstYearGrad\secondSemester\ECE695I2I-II\SmartVents\Gold Masters\Dumb'
-    plotVentData(dirPath)
-    plt.savefig(os.path.join(dirPath, "combinedPlot.png"))
-    plotVentParams(dirPath)
-    plotMainHeat(dirPath)
+    goldMastersDir = os.path.join(os.path.dirname(__file__), "../Gold Masters")
+    for dirPath in os.listdir(goldMastersDir):
+        dirPath = os.path.join(goldMastersDir, dirPath)
+        plotVentData(dirPath)
+        plt.savefig(os.path.join(dirPath, "combinedPlot.png"))
+        plotVentParams(dirPath)
+        plotMainHeat(dirPath)

@@ -35,7 +35,7 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         ylabels = ["Temperature (F)", "Louver Position %"]
         subplot.ylabel = ylabels[idx]
         subplot.legend(loc = 'best', fontsize = 'xx-small')
-    plt.show()
+    # plt.show()
     plt.close()
     # dataFiles = [file for file in os.listdir(ventDataDirPath) if file.endswith("data.csv")]
     # filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]
@@ -122,6 +122,23 @@ def plotMainHeat(dirPath: os.PathLike):
                 else:
                     stillLockedOut = False
         df.loc[:, "Main Heat On"] = newMainHeat
+        firstTargetTime = None
+        lastTargetTime = None
+        for time, row in df.iterrows():
+            if firstTargetTime is None and row["Measured Temperature"] > row["Target Temperature"]:
+                firstTargetTime = time
+            if row["Measured Temperature"] > row["Target Temperature"]:
+                lastTargetTime = time
+        totalEnergyCountMask = (df.index >= firstTargetTime) & (df.index < lastTargetTime) & (df["Main Heat On"] == True)
+        totalEnergyCount = totalEnergyCountMask.sum()
+        averageEnergyUsage = totalEnergyCount / (lastTargetTime - firstTargetTime)
+        with open(os.path.join(dirPath, "energyCalculations.txt"), "w") as f:
+            f.write(f'Energy Calculations\n')
+            f.write(f'Total Energy Count: {totalEnergyCount}\n')
+            f.write(f'Starting Time: {firstTargetTime}\n')
+            f.write(f'Ending Time: {lastTargetTime}\n')
+            f.write(f'Total Energy Time: {lastTargetTime - firstTargetTime}\n')
+            f.write(f'Average Energy Usage: {averageEnergyUsage}\n')
         df.plot(title="Main Heat On/Off", include_bool=True, y=["Main Heat On"], legend=False, ylim=(0,1.1), xlabel='Time (s)')
         plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
         # plt.show()

@@ -21,15 +21,20 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
         ventIdx = os.path.basename(filePath).split('_')[0]
-        df.rename(columns={'Target Temperature':"Target Temperature" + ventIdx}, inplace=True)
         df.set_index("Timestamp", inplace=True)
         df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
-        frames.append(df)
+        df.rename(columns={"Measured Temperature": f'Vent {ventIdx} Measured Temperature', "Target Temperature": f'Vent {ventIdx} Target Temperature', "Motion": f'Vent {ventIdx} Motion', "LouverPosition": f'Vent {ventIdx} LouverPosition'}, inplace=True, errors="raise")
+        ventIdx = os.path.basename(filePath).split('_')[0]
+        frames.append((ventIdx, df))
         #plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
     fig, ax = plt.subplots(2, 1, sharex=True)
 
-    for idx, frame in enumerate(frames):
-        frame.plot(ax=ax, subplots=[["Measured Temperature", f"Target Temperature{idx}"],["Motion", "LouverPosition"]])
+    for ventIdx, frame in frames:
+        frame.plot(title="Vent Data", xlabel="Time (s)", ax=ax, subplots=[[f"Vent {ventIdx} Measured Temperature", f"Vent {ventIdx} Target Temperature"],[f"Vent {ventIdx} Motion", f"Vent {ventIdx} LouverPosition"]])
+    for idx, subplot in enumerate(ax):
+        ylabels = ["Temperature (F)", "Louver Position %"]
+        subplot.ylabel = ylabels[idx]
+        subplot.legend(loc = 'best', fontsize = 'xx-small')
     plt.show()
     plt.close()
     # dataFiles = [file for file in os.listdir(ventDataDirPath) if file.endswith("data.csv")]
@@ -104,6 +109,19 @@ def plotMainHeat(dirPath: os.PathLike):
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
         df.set_index("Timestamp", inplace=True)
         df["Main Heat On"] = df["Measured Temperature"] < df["Target Temperature"]
+        newMainHeat = df.loc[:, "Main Heat On"].values
+        lastTurnOff = None
+        stillLockedOut = False
+        for idx, val in enumerate(newMainHeat):
+            if not val and newMainHeat[idx - 1]:
+                lastTurnOff = df.index[idx]
+                stillLockedOut = True
+            if stillLockedOut:
+                if df.index[idx] - lastTurnOff <= 180:
+                    newMainHeat[idx] = False
+                else:
+                    stillLockedOut = False
+        df.loc[:, "Main Heat On"] = newMainHeat
         df.plot(title="Main Heat On/Off", include_bool=True, y=["Main Heat On"], legend=False, ylim=(0,1.1), xlabel='Time (s)')
         plt.savefig(os.path.join(dirPath, "mainHeatOn.png"))
         # plt.show()
@@ -113,9 +131,10 @@ def plotMainHeat(dirPath: os.PathLike):
 
 
 if __name__ == "__main__":
-    dirPath = os.path.join(os.path.dirname(__file__), "../Data")
-    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
-    dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
+    # dirPath = os.path.join(os.path.dirname(__file__), "../Data")
+    # dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
+    # dirPath = os.path.join(dirPath, os.listdir(dirPath)[-1])
+    dirPath = r'C:\Users\zcawo\Documents\School\Grad\firstYearGrad\secondSemester\ECE695I2I-II\SmartVents\Gold Masters\Dumb'
     plotVentData(dirPath)
     plt.savefig(os.path.join(dirPath, "combinedPlot.png"))
     plotVentParams(dirPath)

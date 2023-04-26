@@ -34,7 +34,7 @@ class Run:
 
 class Vent:
     BASIC_SYSTEM = False # Forces louvers to be always open
-    DUMB_SMART_SYSTEM = True # Emulates smart vents on the market
+    DUMB_SMART_SYSTEM = False # Emulates smart vents on the market
     instances = []
     minTemperature = 60 # Minimum temperature we will allow
 
@@ -106,7 +106,7 @@ class Vent:
         else:
             print("Error, vent", self.id, "has not had it's target temperature set yet.")
 
-        if len(self.runs[0].timestamps) >= 3 and self.runs[0].timestamps[-1].temperature < self.runs[0].timestamps[0].temperature:
+        if len(self.runs[0].timestamps) >= 2 and self.runs[0].timestamps[-1].temperature < self.runs[0].timestamps[0].temperature:
             self.__recalibrate()
 
         # Write the new timestamp info to the data file

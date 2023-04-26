@@ -12,30 +12,38 @@ def plotVentData(ventDataDirPath: os.PathLike, ventUUIDs: list[int] = None,):
     filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]
     if ventUUIDs is not None:
         filePaths = [os.path.join(ventDataDirPath, dataFileName(ventUUID)) for ventUUID in ventUUIDs]
+
     frames = list()
     for filePath in filePaths:
         df = pd.read_csv(filePath, sep="|", parse_dates=["Timestamp "], )
         if len(df.index) == 0:
             continue
         df.columns = df.columns.str.strip()
+        ventIdx = os.path.basename(filePath).split('_')[0]
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time - df["Timestamp"][0])
         df["Timestamp"] = df["Timestamp"].apply(lambda time: time.total_seconds())
-        ventIdx = os.path.basename(filePath).split('_')[0]
         df.set_index("Timestamp", inplace=True)
         df["Motion"] = df["Motion"].str.strip().apply(lambda motion: motion == "True")
-        df.rename(columns={"Measured Temperature": f'Vent {ventIdx} Measured Temperature', "Target Temperature": f'Vent {ventIdx} Target Temperature', "Motion": f'Vent {ventIdx} Motion', "LouverPosition": f'Vent {ventIdx} LouverPosition'}, inplace=True, errors="raise")
-        ventIdx = os.path.basename(filePath).split('_')[0]
-        frames.append((ventIdx, df))
+        df.rename(columns={"Target Temperature": "Target Temperature " + str(ventIdx), "Measured Temperature": "Measured Temperature " + str(ventIdx), "Motion" : "Motion", "LouverPosition" : "LouverPosition " + str(ventIdx)}, inplace=True, errors='raise')
+        frames.append(df)
         #plt.savefig(os.path.join(ventDataDirPath, os.path.basename(filePath).split(".")[0] + ".png"))
+        
     fig, ax = plt.subplots(2, 1, sharex=True)
+    blue = '#1f77b4'
+    yellow = '#d4af37'
+    green = '#2ca02c'
+    color_dict = {'Target Temperature 100' : green, 'Target Temperature 200' : yellow, 'Target Temperature 300' : blue,
+                 'Measured Temperature 100' : green, 'Measured Temperature 200' : yellow, 'Measured Temperature 300' : blue,
+                 'LouverPosition 100' : green, 'LouverPosition 200' : yellow, 'LouverPosition 300' : blue}
+    idx = 100
+    for frame in frames:
+        axes = frame.plot(ax=ax, legend=True, xlabel='Time (s)', color=[color_dict.get(col, '#333333') for col in frame.columns], subplots=[["Measured Temperature " + str(idx), "Target Temperature " + str(idx)],["Motion", "LouverPosition " + str(idx)]])  
+        axes[0].set_ylabel('Temperature (F)')
+        axes[0].set_title('Vent Data')
+        axes[1].set_ylabel('Louver Position (0.0-1.0)')
+        idx += 100
 
-    for ventIdx, frame in frames:
-        frame.plot(title="Vent Data", xlabel="Time (s)", ax=ax, subplots=[[f"Vent {ventIdx} Measured Temperature", f"Vent {ventIdx} Target Temperature"],[f"Vent {ventIdx} Motion", f"Vent {ventIdx} LouverPosition"]])
-    for idx, subplot in enumerate(ax):
-        ylabels = ["Temperature (F)", "Louver Position %"]
-        subplot.ylabel = ylabels[idx]
-        subplot.legend(loc = 'best', fontsize = 'xx-small')
-    # plt.show()
+    plt.show()
     plt.close()
     # dataFiles = [file for file in os.listdir(ventDataDirPath) if file.endswith("data.csv")]
     # filePaths = [os.path.join(ventDataDirPath, dataFile) for dataFile in dataFiles]

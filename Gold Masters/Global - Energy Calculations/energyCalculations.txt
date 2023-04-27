@@ -1,0 +1,6 @@
+Energy Calculations
+Total Energy Count: 16
+Starting Time: 636.215805
+Ending Time: 2710.510744
+Total Energy Time: 2074.2949390000003
+Average Energy Usage: 0.007713464319453752
